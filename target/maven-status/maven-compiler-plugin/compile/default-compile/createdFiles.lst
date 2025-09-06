@@ -1,0 +1,16 @@
+com\hamburg\backend\controller\AuthController.class
+com\hamburg\backend\repository\UsuarioRepository.class
+com\hamburg\backend\service\UsuarioService.class
+com\hamburg\backend\model\Usuario.class
+com\hamburg\backend\security\UserDetailsImpl$UserDetailsImplBuilder.class
+com\hamburg\backend\dto\LoginRequest.class
+com\hamburg\backend\HamburgBackendApplication.class
+com\hamburg\backend\dto\LoginResponse.class
+com\hamburg\backend\security\jwt\AuthEntryPointJwt.class
+com\hamburg\backend\config\DataInitializer.class
+com\hamburg\backend\security\jwt\JwtUtils.class
+com\hamburg\backend\security\WebSecurityConfig.class
+com\hamburg\backend\service\AuthService.class
+com\hamburg\backend\dto\LoginResponse$LoginResponseBuilder.class
+com\hamburg\backend\security\UserDetailsImpl.class
+com\hamburg\backend\security\jwt\AuthTokenFilter.class

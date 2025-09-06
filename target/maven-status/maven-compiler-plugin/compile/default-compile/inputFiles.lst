@@ -1,0 +1,14 @@
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\security\jwt\JwtUtils.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\repository\UsuarioRepository.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\controller\AuthController.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\service\AuthService.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\security\UserDetailsImpl.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\model\Usuario.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\service\UsuarioService.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\security\jwt\AuthEntryPointJwt.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\security\jwt\AuthTokenFilter.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\dto\LoginResponse.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\dto\LoginRequest.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\HamburgBackendApplication.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\config\DataInitializer.java
+C:\Users\gahum\Documents\Backend\HamburgBackend\src\main\java\com\hamburg\backend\security\WebSecurityConfig.java
