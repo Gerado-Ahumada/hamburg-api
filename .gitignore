@@ -55,8 +55,8 @@ Thumbs.db
 *.pid
 
 # Archivos de deploy con credenciales sensibles
-deploy-hamburg-api.bat
-deploy-hamburg-api.sh
+.deploy-hamburg-api.bat
+.deploy-hamburg-api.sh
 
 # Variables de entorno locales
 .env
