@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.hamburg.backend.security.jwt.AuthEntryPointJwt;
 import com.hamburg.backend.security.jwt.AuthTokenFilter;
@@ -58,23 +59,12 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults())
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth
-                    .requestMatchers("/api/auth/login").permitAll()
-                    .requestMatchers("/api/auth/signup").permitAll()
-                    .requestMatchers("/h2-console/**").permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/auth/login")).permitAll()
+                    .requestMatchers(new AntPathRequestMatcher("/api/auth/signup")).permitAll()
                     .anyRequest().authenticated()
-            )
-            .headers(headers -> headers
-                .frameOptions(frameOption -> frameOption.sameOrigin())
-            )
-            .servletApi(servletApi -> servletApi.disable());
-        
-        http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+            );
         
         return http.build();
     }

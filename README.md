@@ -1,14 +1,15 @@
 # Hamburg Backend
 
-Proyecto backend desarrollado en Java 17 con Spring Boot que implementa un módulo de login utilizando una base de datos temporal (H2) con datos ficticios.
+Proyecto backend desarrollado en Java 17 con Spring Boot que implementa un módulo de login utilizando MySQL con configuración segura mediante variables de entorno.
 
 ## Características
 
 - Desarrollado con Java 17 y Spring Boot 3.1.5
 - Autenticación mediante JWT (JSON Web Token)
-- Base de datos H2 en memoria para desarrollo
+- Base de datos MySQL con configuración externalizada
 - Implementación de Spring Security
-- Datos ficticios precargados
+- Variables de entorno para credenciales sensibles
+- Datos de prueba precargados automáticamente
 
 ## Estructura del Proyecto
 
@@ -59,13 +60,28 @@ src
 
 - Java 17 o superior
 - Maven 3.6 o superior
+- MySQL 8.0 o superior
+- Base de datos MySQL configurada y accesible
 
 ## Configuración
 
-El proyecto viene preconfigurado con una base de datos H2 en memoria y un usuario administrador:
+### Base de Datos MySQL
 
-- **Usuario**: admin
-- **Contraseña**: admin
+El proyecto requiere una base de datos MySQL configurada. Los usuarios de prueba se crean automáticamente:
+
+- **Usuario Administrador**: admin / admin
+- **Usuario de Prueba**: testplayer / testpassword
+
+### Variables de Entorno Requeridas
+
+Antes de ejecutar la aplicación, debe configurar las siguientes variables de entorno para la conexión a MySQL:
+
+- `DB_URL`: URL de conexión a la base de datos MySQL
+- `DB_USERNAME`: Usuario de la base de datos MySQL  
+- `DB_PASSWORD`: Contraseña de la base de datos MySQL
+- `HAMBURG_APP_JWT_SECRET`: Clave secreta para JWT (mínimo 256 bits)
+- `HAMBURG_APP_JWT_EXPIRATION_MS`: Tiempo de expiración del token en milisegundos
+- `SPRING_PROFILES_ACTIVE`: Perfil activo de Spring
 
 ## Ejecución
 
@@ -109,8 +125,16 @@ chmod +x deploy-hamburg-api.sh
 
 La aplicación utiliza las siguientes variables de entorno:
 
+### Base de Datos
+- `DB_URL`: URL de conexión a la base de datos MySQL
+- `DB_USERNAME`: Usuario de la base de datos MySQL
+- `DB_PASSWORD`: Contraseña de la base de datos MySQL
+
+### JWT y Seguridad
 - `HAMBURG_APP_JWT_SECRET`: Clave secreta para la generación de tokens JWT (mínimo 256 bits)
 - `HAMBURG_APP_JWT_EXPIRATION_MS`: Tiempo de expiración del token JWT en milisegundos
+
+### Configuración de Spring
 - `SPRING_PROFILES_ACTIVE`: Perfil activo de Spring (dev, prod, etc.)
 
 ### Personalización de Variables de Entorno
@@ -119,15 +143,23 @@ Puede personalizar las variables de entorno editando los scripts de despliegue o
 
 #### Windows
 ```powershell
-set HAMBURG_APP_JWT_SECRET=su_clave_secreta_personalizada
-set HAMBURG_APP_JWT_EXPIRATION_MS=3600000
+# Configurar las variables de entorno antes de ejecutar
+set DB_URL=<tu_url_mysql>
+set DB_USERNAME=<tu_usuario>
+set DB_PASSWORD=<tu_contraseña>
+set HAMBURG_APP_JWT_SECRET=<tu_clave_jwt>
+set HAMBURG_APP_JWT_EXPIRATION_MS=<tiempo_expiracion>
 ./deploy-hamburg-api.bat
 ```
 
 #### Linux/Mac
 ```bash
-export HAMBURG_APP_JWT_SECRET="su_clave_secreta_personalizada"
-export HAMBURG_APP_JWT_EXPIRATION_MS="3600000"
+# Configurar las variables de entorno antes de ejecutar
+export DB_URL="<tu_url_mysql>"
+export DB_USERNAME="<tu_usuario>"
+export DB_PASSWORD="<tu_contraseña>"
+export HAMBURG_APP_JWT_SECRET="<tu_clave_jwt>"
+export HAMBURG_APP_JWT_EXPIRATION_MS="<tiempo_expiracion>"
 ./deploy-hamburg-api.sh
 ```
 
@@ -157,15 +189,38 @@ export HAMBURG_APP_JWT_EXPIRATION_MS="3600000"
   }
   ```
 
-## Consola H2
+## Seguridad
 
-Puedes acceder a la consola de la base de datos H2 en:
+### Archivos Excluidos del Repositorio
 
-- URL: `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:mem:hamburgdb`
-- Usuario: `sa`
-- Contraseña: (dejar en blanco)
+Por seguridad, los siguientes archivos están excluidos del control de versiones:
 
-## Integración con Base de Datos Real
+- Scripts de deploy con credenciales (`deploy-hamburg-api.bat`, `deploy-hamburg-api.sh`)
+- Archivos de configuración con credenciales (`.env`, `application-*.properties`)
+- Carpetas de configuración del IDE (`.idea/`, `.vscode/`)
+- Archivos compilados y temporales (`target/`, `*.log`)
 
-Para integrar con una base de datos real, modifica el archivo `application.properties` con la configuración de tu base de datos y actualiza las dependencias en `pom.xml` según sea necesario.
+### Mejores Prácticas Implementadas
+
+- ✅ Credenciales externalizadas mediante variables de entorno
+- ✅ Archivos sensibles excluidos del repositorio
+- ✅ Configuración segura de JWT
+- ✅ Scripts de deploy locales para desarrollo
+
+## Acceso a la Base de Datos
+
+Para acceder a la base de datos MySQL, utiliza tu cliente MySQL preferido con las credenciales configuradas:
+
+- **Host**: localhost (o tu servidor MySQL)
+- **Puerto**: 3306 (por defecto)
+- **Base de Datos**: hamburg_db
+- **Usuario/Contraseña**: Los configurados en las variables de entorno
+
+## Migración desde H2
+
+Este proyecto ha sido migrado de H2 a MySQL. Los cambios principales incluyen:
+
+- Configuración de MySQL en lugar de H2
+- Variables de entorno para credenciales de base de datos
+- Eliminación de la consola H2
+- Mejoras en la seguridad del repositorio
