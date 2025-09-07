@@ -76,19 +76,12 @@ El proyecto requiere una base de datos MySQL configurada. Los usuarios de prueba
 
 Antes de ejecutar la aplicación, debe configurar las siguientes variables de entorno para la conexión a MySQL:
 
-```bash
-# Configuración de Base de Datos
-DB_URL=jdbc:mysql://localhost:3306/hamburg_db
-DB_USERNAME=tu_usuario_mysql
-DB_PASSWORD=tu_contraseña_mysql
-
-# Configuración JWT
-HAMBURG_APP_JWT_SECRET=tu_clave_secreta_jwt_minimo_256_bits
-HAMBURG_APP_JWT_EXPIRATION_MS=3600000
-
-# Perfil de Spring
-SPRING_PROFILES_ACTIVE=dev
-```
+- `DB_URL`: URL de conexión a la base de datos MySQL
+- `DB_USERNAME`: Usuario de la base de datos MySQL  
+- `DB_PASSWORD`: Contraseña de la base de datos MySQL
+- `HAMBURG_APP_JWT_SECRET`: Clave secreta para JWT (mínimo 256 bits)
+- `HAMBURG_APP_JWT_EXPIRATION_MS`: Tiempo de expiración del token en milisegundos
+- `SPRING_PROFILES_ACTIVE`: Perfil activo de Spring
 
 ## Ejecución
 
@@ -150,21 +143,23 @@ Puede personalizar las variables de entorno editando los scripts de despliegue o
 
 #### Windows
 ```powershell
-set DB_URL=jdbc:mysql://localhost:3306/hamburg_db
-set DB_USERNAME=tu_usuario
-set DB_PASSWORD=tu_contraseña
-set HAMBURG_APP_JWT_SECRET=su_clave_secreta_personalizada
-set HAMBURG_APP_JWT_EXPIRATION_MS=3600000
+# Configurar las variables de entorno antes de ejecutar
+set DB_URL=<tu_url_mysql>
+set DB_USERNAME=<tu_usuario>
+set DB_PASSWORD=<tu_contraseña>
+set HAMBURG_APP_JWT_SECRET=<tu_clave_jwt>
+set HAMBURG_APP_JWT_EXPIRATION_MS=<tiempo_expiracion>
 ./deploy-hamburg-api.bat
 ```
 
 #### Linux/Mac
 ```bash
-export DB_URL="jdbc:mysql://localhost:3306/hamburg_db"
-export DB_USERNAME="tu_usuario"
-export DB_PASSWORD="tu_contraseña"
-export HAMBURG_APP_JWT_SECRET="su_clave_secreta_personalizada"
-export HAMBURG_APP_JWT_EXPIRATION_MS="3600000"
+# Configurar las variables de entorno antes de ejecutar
+export DB_URL="<tu_url_mysql>"
+export DB_USERNAME="<tu_usuario>"
+export DB_PASSWORD="<tu_contraseña>"
+export HAMBURG_APP_JWT_SECRET="<tu_clave_jwt>"
+export HAMBURG_APP_JWT_EXPIRATION_MS="<tiempo_expiracion>"
 ./deploy-hamburg-api.sh
 ```
 
