@@ -1,7 +1,8 @@
 package com.hamburg.backend.security;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,14 +32,16 @@ public class UserDetailsImpl implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
     
     public static UserDetailsImpl build(Usuario usuario) {
-        GrantedAuthority authority = new SimpleGrantedAuthority(usuario.getRol());
+        List<GrantedAuthority> authorities = usuario.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getNombre().name()))
+                .collect(Collectors.toList());
         
         return UserDetailsImpl.builder()
                 .id(usuario.getId())
                 .username(usuario.getUsername())
                 .email(usuario.getEmail())
                 .password(usuario.getPassword())
-                .authorities(Collections.singletonList(authority))
+                .authorities(authorities)
                 .build();
     }
 
