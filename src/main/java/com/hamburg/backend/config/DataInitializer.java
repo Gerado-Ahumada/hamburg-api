@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hamburg.backend.model.*;
 import com.hamburg.backend.repository.*;
@@ -14,15 +16,17 @@ import java.util.Set;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private UserRepository userRepository;
-    
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+
     @Autowired
     private RoleRepository roleRepository;
-    
+
     @Autowired
     private StatusRepository statusRepository;
-    
+
+    @Autowired
+    private UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
     
@@ -69,7 +73,7 @@ public class DataInitializer implements CommandLineRunner {
             
             userRepository.save(admin);
             
-            System.out.println("Usuario admin creado con éxito");
+            logger.info("Usuario admin creado con éxito");
         }
         
         // Verificar si ya existe el usuario player
@@ -97,7 +101,7 @@ public class DataInitializer implements CommandLineRunner {
             
             userRepository.save(player);
             
-            System.out.println("Usuario testplayer creado con éxito");
+            logger.info("Usuario testplayer creado con éxito");
         }
     }
 }
