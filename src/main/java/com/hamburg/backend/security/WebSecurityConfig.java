@@ -19,7 +19,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.hamburg.backend.security.jwt.AuthEntryPointJwt;
 import com.hamburg.backend.security.jwt.AuthTokenFilter;
-import com.hamburg.backend.service.UsuarioService;
+import com.hamburg.backend.service.UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -27,7 +27,7 @@ import com.hamburg.backend.service.UsuarioService;
 public class WebSecurityConfig {
     
     @Autowired
-    private UsuarioService usuarioService;
+    private UserService userService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
@@ -39,7 +39,7 @@ public class WebSecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         
-        authProvider.setUserDetailsService(usuarioService);
+        authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder());
         
         return authProvider;

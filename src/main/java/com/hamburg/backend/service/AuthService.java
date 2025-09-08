@@ -12,10 +12,10 @@ import com.hamburg.backend.dto.LoginRequest;
 import com.hamburg.backend.dto.LoginResponse;
 import com.hamburg.backend.dto.SignupRequest;
 import com.hamburg.backend.model.*;
-import com.hamburg.backend.repository.EstadoRepository;
-import com.hamburg.backend.repository.RolRepository;
-import com.hamburg.backend.repository.SesionRepository;
-import com.hamburg.backend.repository.UsuarioRepository;
+import com.hamburg.backend.repository.StatusRepository;
+import com.hamburg.backend.repository.RoleRepository;
+import com.hamburg.backend.repository.SessionRepository;
+import com.hamburg.backend.repository.UserRepository;
 import com.hamburg.backend.security.UserDetailsImpl;
 import com.hamburg.backend.security.jwt.JwtUtils;
 
@@ -34,17 +34,17 @@ public class AuthService {
     private JwtUtils jwtUtils;
     
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
     
     @Autowired
-    private RolRepository rolRepository;
+    private RoleRepository roleRepository;
     
     
     @Autowired
-    private EstadoRepository estadoRepository;
+    private StatusRepository statusRepository;
     
     @Autowired
-    private SesionRepository sesionRepository;
+    private SessionRepository sessionRepository;
     
     @Autowired
     private PasswordEncoder encoder;
@@ -59,97 +59,97 @@ public class AuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         
         // Buscar el usuario para crear la sesión
-        Usuario usuario = usuarioRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Desactivar sesiones anteriores del usuario
-        sesionRepository.desactivarSesionesPorUsuario(usuario);
+        sessionRepository.deactivateSessionsByUser(user);
         
         // Crear nueva sesión
         LocalDateTime ahora = LocalDateTime.now();
         LocalDateTime expiracion = ahora.plus(Duration.ofMillis(jwtUtils.getJwtExpirationMs()));
         
-        Sesion nuevaSesion = new Sesion(jwt, ahora, expiracion, usuario);
-        sesionRepository.save(nuevaSesion);
+        Session newSession = new Session(jwt, ahora, expiracion, user);
+        sessionRepository.save(newSession);
         
         return LoginResponse.builder()
                 .token(jwt)
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
                 .email(userDetails.getEmail())
-                .rol(userDetails.getAuthorities().stream().findFirst().get().getAuthority())
+                .role(userDetails.getAuthorities().stream().findFirst().get().getAuthority())
                 .build();
     }
     
     public String registrarUsuario(SignupRequest signUpRequest) {
-        if (usuarioRepository.existsByUsername(signUpRequest.getUsername())) {
-            return "Error: El nombre de usuario ya está en uso!";
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            return "Error: Username is already taken!";
         }
 
-        if (usuarioRepository.existsByEmail(signUpRequest.getEmail())) {
-            return "Error: El email ya está en uso!";
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return "Error: Email is already in use!";
         }
 
         // Crear nueva cuenta de usuario
-        Usuario usuario = new Usuario(signUpRequest.getUsername(),
+        User user = new User(signUpRequest.getUsername(),
                                     signUpRequest.getEmail(),
                                     encoder.encode(signUpRequest.getPassword()),
-                                    signUpRequest.getNombre(),
-                                    signUpRequest.getApellido());
+                                    signUpRequest.getFirstName(),
+                                    signUpRequest.getLastName());
         
-        usuario.setTelefono(signUpRequest.getTelefono());
-        usuario.setCategoriaJugador(signUpRequest.getCategoriaJugador());
+        user.setPhone(signUpRequest.getPhone());
+        user.setPlayerCategory(signUpRequest.getPlayerCategory());
 
-        Set<String> strRoles = signUpRequest.getRol();
-        Set<Rol> roles = new HashSet<>();
+        Set<String> strRoles = signUpRequest.getRole();
+        Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Rol playerRole = rolRepository.findByNombre(ERol.ROLE_PLAYER)
-                    .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+            Role playerRole = roleRepository.findByName(ERole.ROLE_PLAYER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role not found."));
             roles.add(playerRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
-                        Rol adminRole = rolRepository.findByNombre(ERol.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found."));
                         roles.add(adminRole);
                         break;
                     default:
-                        Rol playerRole = rolRepository.findByNombre(ERol.ROLE_PLAYER)
-                                .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+                        Role playerRole = roleRepository.findByName(ERole.ROLE_PLAYER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found."));
                         roles.add(playerRole);
                 }
             });
         }
 
-        usuario.setRoles(roles);
+        user.setRoles(roles);
         
         // Asignar estado ACTIVE por defecto
-        Estado estadoActivo = estadoRepository.findByNombre(EEstado.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("Error: Estado no encontrado."));
-        usuario.setEstado(estadoActivo);
+        Status activeStatus = statusRepository.findByName(EStatus.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("Error: Status not found."));
+        user.setStatus(activeStatus);
 
-        usuarioRepository.save(usuario);
+        userRepository.save(user);
 
-        return "Usuario registrado exitosamente!";
+        return "User registered successfully!";
     }
     
     public void cerrarSesion(String token) {
-        sesionRepository.findByTokenAndActivaTrue(token)
-                .ifPresent(sesion -> {
-                    sesion.desactivar();
-                    sesionRepository.save(sesion);
+        sessionRepository.findByTokenAndActiveTrue(token)
+                .ifPresent(session -> {
+                    session.deactivate();
+                    sessionRepository.save(session);
                 });
     }
     
     public boolean validarSesion(String token) {
-        return sesionRepository.findByTokenAndActivaTrue(token)
-                .map(sesion -> !sesion.isExpirada())
+        return sessionRepository.findByTokenAndActiveTrue(token)
+                .map(session -> !session.isExpired())
                 .orElse(false);
     }
     
     public void limpiarSesionesExpiradas() {
-        sesionRepository.desactivarSesionesExpiradas(LocalDateTime.now());
+        sessionRepository.deactivateExpiredSessions(LocalDateTime.now());
     }
 }

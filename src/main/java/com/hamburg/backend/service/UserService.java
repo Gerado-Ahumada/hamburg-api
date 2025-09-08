@@ -6,21 +6,21 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.hamburg.backend.model.Usuario;
-import com.hamburg.backend.repository.UsuarioRepository;
+import com.hamburg.backend.model.User;
+import com.hamburg.backend.repository.UserRepository;
 import com.hamburg.backend.security.UserDetailsImpl;
 
 @Service
-public class UsuarioService implements UserDetailsService {
+public class UserService implements UserDetailsService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
     
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         
-        return UserDetailsImpl.build(usuario);
+        return UserDetailsImpl.build(user);
     }
 }

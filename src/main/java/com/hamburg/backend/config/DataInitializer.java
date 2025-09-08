@@ -15,13 +15,13 @@ import java.util.Set;
 public class DataInitializer implements CommandLineRunner {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
     
     @Autowired
-    private RolRepository rolRepository;
+    private RoleRepository roleRepository;
     
     @Autowired
-    private EstadoRepository estadoRepository;
+    private StatusRepository statusRepository;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -29,73 +29,73 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Crear roles si no existen
-        if (rolRepository.findByNombre(ERol.ROLE_ADMIN).isEmpty()) {
-            rolRepository.save(new Rol(ERol.ROLE_ADMIN));
+        if (roleRepository.findByName(ERole.ROLE_ADMIN).isEmpty()) {
+            roleRepository.save(new Role(ERole.ROLE_ADMIN));
         }
-        if (rolRepository.findByNombre(ERol.ROLE_PLAYER).isEmpty()) {
-            rolRepository.save(new Rol(ERol.ROLE_PLAYER));
+        if (roleRepository.findByName(ERole.ROLE_PLAYER).isEmpty()) {
+            roleRepository.save(new Role(ERole.ROLE_PLAYER));
         }
         
         // Crear estados si no existen
-        if (estadoRepository.findByNombre(EEstado.ACTIVE).isEmpty()) {
-            estadoRepository.save(new Estado(EEstado.ACTIVE));
+        if (statusRepository.findByName(EStatus.ACTIVE).isEmpty()) {
+            statusRepository.save(new Status(EStatus.ACTIVE));
         }
-        if (estadoRepository.findByNombre(EEstado.DESACTIVE).isEmpty()) {
-            estadoRepository.save(new Estado(EEstado.DESACTIVE));
+        if (statusRepository.findByName(EStatus.INACTIVE).isEmpty()) {
+            statusRepository.save(new Status(EStatus.INACTIVE));
         }
         
         // Verificar si ya existe el usuario admin
-        if (!usuarioRepository.existsByUsername("admin")) {
-            Usuario admin = new Usuario();
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = new User();
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setNombre("Administrador");
-            admin.setApellido("Sistema");
+            admin.setFirstName("Administrator");
+            admin.setLastName("System");
             admin.setEmail("admin@hamburg.com");
-            admin.setTelefono("123456789");
-            admin.setCategoriaJugador("N/A");
+            admin.setPhone("123456789");
+            admin.setPlayerCategory("N/A");
             
             // Asignar rol de administrador
-            Set<Rol> roles = new HashSet<>();
-            Rol adminRole = rolRepository.findByNombre(ERol.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Error: Rol ADMIN no encontrado."));
+            Set<Role> roles = new HashSet<>();
+            Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException("Error: Role ADMIN not found."));
             roles.add(adminRole);
             admin.setRoles(roles);
             
             // Asignar estado activo
-            Estado estadoActivo = estadoRepository.findByNombre(EEstado.ACTIVE)
-                    .orElseThrow(() -> new RuntimeException("Error: Estado ACTIVE no encontrado."));
-            admin.setEstado(estadoActivo);
+            Status activeStatus = statusRepository.findByName(EStatus.ACTIVE)
+                    .orElseThrow(() -> new RuntimeException("Error: Status ACTIVE not found."));
+            admin.setStatus(activeStatus);
             
-            usuarioRepository.save(admin);
+            userRepository.save(admin);
             
             System.out.println("Usuario admin creado con éxito");
         }
         
         // Verificar si ya existe el usuario player
-        if (!usuarioRepository.existsByUsername("testplayer")) {
-            Usuario player = new Usuario();
+        if (!userRepository.existsByUsername("testplayer")) {
+            User player = new User();
             player.setUsername("testplayer");
             player.setPassword(passwordEncoder.encode("player123"));
-            player.setNombre("Test");
-            player.setApellido("Player");
+            player.setFirstName("Test");
+            player.setLastName("Player");
             player.setEmail("testplayer@hamburg.com");
-            player.setTelefono("987654321");
-            player.setCategoriaJugador("Principiante");
+            player.setPhone("987654321");
+            player.setPlayerCategory("Beginner");
             
             // Asignar rol de player
-            Set<Rol> playerRoles = new HashSet<>();
-            Rol playerRole = rolRepository.findByNombre(ERol.ROLE_PLAYER)
-                    .orElseThrow(() -> new RuntimeException("Error: Rol PLAYER no encontrado."));
+            Set<Role> playerRoles = new HashSet<>();
+            Role playerRole = roleRepository.findByName(ERole.ROLE_PLAYER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role PLAYER not found."));
             playerRoles.add(playerRole);
             player.setRoles(playerRoles);
             
             // Asignar estado activo
-            Estado estadoActivo = estadoRepository.findByNombre(EEstado.ACTIVE)
-                    .orElseThrow(() -> new RuntimeException("Error: Estado ACTIVE no encontrado."));
-            player.setEstado(estadoActivo);
+            Status activeStatus = statusRepository.findByName(EStatus.ACTIVE)
+                    .orElseThrow(() -> new RuntimeException("Error: Status ACTIVE not found."));
+            player.setStatus(activeStatus);
             
-            usuarioRepository.save(player);
+            userRepository.save(player);
             
             System.out.println("Usuario testplayer creado con éxito");
         }

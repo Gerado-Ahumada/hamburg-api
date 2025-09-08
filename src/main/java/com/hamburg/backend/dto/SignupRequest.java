@@ -22,19 +22,19 @@ public class SignupRequest {
     
     @NotBlank
     @Size(max = 50)
-    private String nombre;
+    private String firstName;
     
     @NotBlank
     @Size(max = 50)
-    private String apellido;
+    private String lastName;
     
     @Size(max = 20)
-    private String telefono;
+    private String phone;
     
     @Size(max = 50)
-    private String categoriaJugador;
+    private String playerCategory;
     
-    private Set<String> rol;
+    private Set<String> role;
     
     public SignupRequest() {
     }
@@ -63,43 +63,43 @@ public class SignupRequest {
         this.password = password;
     }
     
-    public String getNombre() {
-        return nombre;
+    public String getFirstName() {
+        return firstName;
     }
     
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
     
-    public String getApellido() {
-        return apellido;
+    public String getLastName() {
+        return lastName;
     }
     
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
     
-    public String getTelefono() {
-        return telefono;
+    public String getPhone() {
+        return phone;
     }
     
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
     
-    public String getCategoriaJugador() {
-        return categoriaJugador;
+    public String getPlayerCategory() {
+        return playerCategory;
     }
     
-    public void setCategoriaJugador(String categoriaJugador) {
-        this.categoriaJugador = categoriaJugador;
+    public void setPlayerCategory(String playerCategory) {
+        this.playerCategory = playerCategory;
     }
     
-    public Set<String> getRol() {
-        return rol;
+    public Set<String> getRole() {
+        return role;
     }
     
-    public void setRol(Set<String> rol) {
-        this.rol = rol;
+    public void setRole(Set<String> role) {
+        this.role = role;
     }
 }

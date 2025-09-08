@@ -9,7 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hamburg.backend.model.Usuario;
+import com.hamburg.backend.model.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,16 +31,16 @@ public class UserDetailsImpl implements UserDetails {
     
     private Collection<? extends GrantedAuthority> authorities;
     
-    public static UserDetailsImpl build(Usuario usuario) {
-        List<GrantedAuthority> authorities = usuario.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getNombre().name()))
+    public static UserDetailsImpl build(User user) {
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
         
         return UserDetailsImpl.builder()
-                .id(usuario.getId())
-                .username(usuario.getUsername())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .password(user.getPassword())
                 .authorities(authorities)
                 .build();
     }
