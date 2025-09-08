@@ -12,11 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "sessions")
-public class Session {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Session extends BaseEntity {
     
     @Column(nullable = false, unique = true, length = 500)
     private String token;

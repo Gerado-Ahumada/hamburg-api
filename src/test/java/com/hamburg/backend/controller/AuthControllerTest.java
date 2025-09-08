@@ -9,9 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +22,10 @@ import com.hamburg.backend.dto.LoginRequest;
 import com.hamburg.backend.dto.LoginResponse;
 import com.hamburg.backend.service.AuthService;
 
-@WebMvcTest(AuthController.class)
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class AuthControllerTest {
 
     @Autowired
@@ -45,7 +51,7 @@ public class AuthControllerTest {
                 .id(1L)
                 .username("admin")
                 .email("admin@hamburg.com")
-                .rol("ROLE_ADMIN")
+                .role("ROLE_ADMIN")
                 .build();
     }
 
@@ -59,6 +65,6 @@ public class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("jwt-token"))
                 .andExpect(jsonPath("$.username").value("admin"))
-                .andExpect(jsonPath("$.rol").value("ROLE_ADMIN"));
+                .andExpect(jsonPath("$.role").value("ROLE_ADMIN"));
     }
 }

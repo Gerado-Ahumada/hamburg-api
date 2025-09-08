@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "statuses")
-public class Status {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Status extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -20,13 +17,7 @@ public class Status {
         this.name = name;
     }
     
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
+
     
     public EStatus getName() {
         return name;
