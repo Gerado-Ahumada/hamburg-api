@@ -14,6 +14,7 @@ import com.hamburg.backend.dto.LoginRequest;
 import com.hamburg.backend.dto.LoginResponse;
 import com.hamburg.backend.dto.MessageResponse;
 import com.hamburg.backend.dto.SignupRequest;
+import com.hamburg.backend.exception.UnauthorizedRoleException;
 import com.hamburg.backend.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -45,15 +46,40 @@ public class AuthController {
     }
     
     @PostMapping("/signup")
-    public ResponseEntity<?> registrarUsuario(@Valid @RequestBody SignupRequest signUpRequest) {
-        String resultado = authService.registrarUsuario(signUpRequest);
-        
-        if (resultado.startsWith("Error:")) {
+    public ResponseEntity<?> registrarUsuario(
+            @Valid @RequestBody SignupRequest signUpRequest,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            // Extraer el token del header Authorization
+            String token = null;
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                token = authorizationHeader.substring(7);
+            }
+            
+            if (token == null) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("Token de autorización requerido"));
+            }
+            
+            // Validar que el usuario tenga rol de administrador
+            authService.validateAdminRole(token);
+            
+            String resultado = authService.registrarUsuario(signUpRequest);
+            
+            if (resultado.startsWith("Error:")) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse(resultado));
+            }
+            
+            return ResponseEntity.ok(new MessageResponse(resultado));
+            
+        } catch (UnauthorizedRoleException e) {
+            return ResponseEntity.status(403)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse(resultado));
+                    .body(new MessageResponse("Error al registrar usuario: " + e.getMessage()));
         }
-        
-        return ResponseEntity.ok(new MessageResponse(resultado));
     }
     
     @PostMapping("/logout")

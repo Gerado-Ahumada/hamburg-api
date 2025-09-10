@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -18,9 +19,13 @@ import java.util.Set;
 @Table(name = "users", 
        uniqueConstraints = {
            @UniqueConstraint(columnNames = "username"),
-           @UniqueConstraint(columnNames = "email")
+           @UniqueConstraint(columnNames = "email"),
+           @UniqueConstraint(columnNames = "uuid")
        })
 public class User extends BaseEntity {
+    
+    @Column(unique = true, nullable = false)
+    private String uuid;
     
     @NotBlank
     @Size(max = 20)
@@ -65,5 +70,13 @@ public class User extends BaseEntity {
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.uuid = UUID.randomUUID().toString();
+    }
+    
+    @PrePersist
+    private void generateUuid() {
+        if (this.uuid == null) {
+            this.uuid = UUID.randomUUID().toString();
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.hamburg.backend.dto.LoginRequest;
 import com.hamburg.backend.dto.LoginResponse;
 import com.hamburg.backend.dto.SignupRequest;
+import com.hamburg.backend.exception.UnauthorizedRoleException;
 import com.hamburg.backend.model.*;
 import com.hamburg.backend.repository.StatusRepository;
 import com.hamburg.backend.repository.RoleRepository;
@@ -74,7 +75,7 @@ public class AuthService {
         
         return LoginResponse.builder()
                 .token(jwt)
-                .id(userDetails.getId())
+                .userUuid(user.getUuid())
                 .username(userDetails.getUsername())
                 .email(userDetails.getEmail())
                 .role(userDetails.getAuthorities().stream().findFirst().get().getAuthority())
@@ -151,5 +152,21 @@ public class AuthService {
     
     public void limpiarSesionesExpiradas() {
         sessionRepository.deactivateExpiredSessions(LocalDateTime.now());
+    }
+    
+    public User getUserFromToken(String token) {
+        String username = jwtUtils.getUserNameFromJwtToken(token);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+    }
+    
+    public void validateAdminRole(String token) {
+        User user = getUserFromToken(token);
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_ADMIN);
+        
+        if (!isAdmin) {
+            throw new UnauthorizedRoleException("Acceso denegado: Se requiere rol de administrador para realizar esta acción");
+        }
     }
 }

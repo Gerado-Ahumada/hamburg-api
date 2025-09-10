@@ -49,7 +49,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             // Saltear el filtro JWT para endpoints públicos
             String requestURI = request.getRequestURI();
             if ("/api/auth/login".equals(requestURI) || 
-                "/api/auth/signup".equals(requestURI) || 
                 "/api/auth/test".equals(requestURI)) {
                 logger.info("Saltando filtro JWT para endpoint público: {}", requestURI);
                 filterChain.doFilter(request, response);
