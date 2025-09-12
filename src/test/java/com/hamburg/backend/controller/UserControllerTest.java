@@ -5,8 +5,12 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doAnswer;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,9 +26,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.hamburg.backend.dto.EditPlayerRequest;
 import com.hamburg.backend.dto.PlayerResponse;
 import com.hamburg.backend.dto.PlayersPageResponse;
+import com.hamburg.backend.service.AuthService;
 import com.hamburg.backend.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
@@ -37,6 +45,12 @@ public class UserControllerTest {
 
     @MockBean
     private UserService userService;
+    
+    @MockBean
+    private AuthService authService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private PlayersPageResponse playersPageResponse;
     private PlayerResponse player1;
@@ -218,6 +232,140 @@ public class UserControllerTest {
     @WithMockUser(roles = "PLAYER")
     public void testGetPlayersWithInsufficientRole() throws Exception {
         mockMvc.perform(get("/api/users/players"))
+                .andExpect(status().isForbidden());
+    }
+
+    // Tests for editPlayer endpoint
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerSuccess() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        request.setLastName("Updated Doe");
+        request.setPlayerCategory("JUNIOR");
+        request.setStatus("ACTIVE");
+        
+        doNothing().when(authService).validateAdminRole(anyString());
+        when(authService.validarSesion(anyString())).thenReturn(true);
+        when(userService.editPlayer(anyString(), any(EditPlayerRequest.class))).thenReturn("Player updated successfully");
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Player updated successfully"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerInvalidRole() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        
+        doThrow(new RuntimeException("Access denied: Admin role required")).when(authService).validateAdminRole(anyString());
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer invalid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Access denied: Admin role required"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerInvalidSession() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        
+        doNothing().when(authService).validateAdminRole(anyString());
+        when(authService.validarSesion(anyString())).thenReturn(false);
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer expired-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Invalid or expired session"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerUserNotFound() throws Exception {
+        String playerUuid = "non-existent-uuid";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        
+        doNothing().when(authService).validateAdminRole(anyString());
+        when(authService.validarSesion(anyString())).thenReturn(true);
+        when(userService.editPlayer(anyString(), any(EditPlayerRequest.class))).thenThrow(new RuntimeException("User not found"));
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User not found"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerMissingAuthorizationHeader() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Authorization header is required"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testEditPlayerValidationError() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        // Empty request should trigger validation errors
+        
+        doNothing().when(authService).validateAdminRole(anyString());
+        when(authService.validarSesion(anyString())).thenReturn(true);
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk()); // Should still pass as all fields are optional
+    }
+
+    @Test
+    public void testEditPlayerWithoutAuthentication() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "PLAYER")
+    public void testEditPlayerWithInsufficientRole() throws Exception {
+        String playerUuid = "uuid-1";
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+
+        mockMvc.perform(put("/api/users/players/{uuid}", playerUuid)
+                .header("Authorization", "Bearer valid-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
 }

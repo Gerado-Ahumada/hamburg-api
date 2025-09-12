@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,19 +27,29 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.hamburg.backend.dto.EditPlayerRequest;
 import com.hamburg.backend.dto.PlayersPageResponse;
 import com.hamburg.backend.model.ERole;
 import com.hamburg.backend.model.EStatus;
 import com.hamburg.backend.model.Role;
 import com.hamburg.backend.model.Status;
 import com.hamburg.backend.model.User;
+import com.hamburg.backend.repository.StatusRepository;
 import com.hamburg.backend.repository.UserRepository;
 import com.hamburg.backend.security.UserDetailsImpl;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.mockito.Mock;
 
 public class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    
+    @Mock
+    private StatusRepository statusRepository;
+    
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -256,5 +268,117 @@ public class UserServiceTest {
         
         assertNotNull(response);
         assertEquals(1, response.getPlayers().size());
+    }
+
+    // Tests for editPlayer method
+    @Test
+    public void testEditPlayerSuccess() {
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        request.setLastName("Updated Doe");
+        request.setPassword("newpassword");
+        request.setPlayerCategory("JUNIOR");
+        request.setStatus("ACTIVE");
+        
+        Status newStatus = new Status(EStatus.ACTIVE);
+        
+        when(userRepository.findByUuid("uuid-1")).thenReturn(Optional.of(playerUser1));
+        when(statusRepository.findByName(EStatus.ACTIVE)).thenReturn(Optional.of(newStatus));
+        when(passwordEncoder.encode("newpassword")).thenReturn("encodedpassword");
+        when(userRepository.save(any(User.class))).thenReturn(playerUser1);
+        
+        String result = userService.editPlayer("uuid-1", request);
+        
+        verify(userRepository, times(1)).save(any(User.class));
+        assertEquals("Jugador actualizado exitosamente", result);
+        assertEquals("Updated John", playerUser1.getFirstName());
+        assertEquals("Updated Doe", playerUser1.getLastName());
+        assertEquals("JUNIOR", playerUser1.getPlayerCategory());
+    }
+
+    @Test
+    public void testEditPlayerUserNotFound() {
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated John");
+        
+        when(userRepository.findByUuid("non-existent-uuid")).thenReturn(Optional.empty());
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            userService.editPlayer("non-existent-uuid", request);
+        });
+        
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    public void testEditPlayerUserNotPlayer() {
+        // Create admin user
+        User adminUser = new User();
+        adminUser.setId(5L);
+        adminUser.setUsername("admin");
+        adminUser.setUuid("admin-uuid");
+        Role adminRole = new Role(ERole.ROLE_ADMIN);
+        adminUser.setRoles(Set.of(adminRole));
+        
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Updated Admin");
+        
+        when(userRepository.findByUuid("admin-uuid")).thenReturn(Optional.of(adminUser));
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            userService.editPlayer("admin-uuid", request);
+        });
+        
+        assertEquals("User is not a player", exception.getMessage());
+    }
+
+    @Test
+    public void testEditPlayerInvalidStatus() {
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setStatus("INVALID_STATUS");
+        
+        when(userRepository.findByUuid("uuid-1")).thenReturn(Optional.of(playerUser1));
+        when(statusRepository.findByName(any())).thenReturn(Optional.empty());
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            userService.editPlayer("uuid-1", request);
+        });
+        
+        assertEquals("Invalid status: INVALID_STATUS", exception.getMessage());
+    }
+
+    @Test
+    public void testEditPlayerPartialUpdate() {
+        EditPlayerRequest request = new EditPlayerRequest();
+        request.setFirstName("Only First Name");
+        // Only updating first name, other fields should remain unchanged
+        
+        String originalLastName = playerUser1.getLastName();
+        String originalCategory = playerUser1.getPlayerCategory();
+        
+        when(userRepository.findByUuid("uuid-1")).thenReturn(Optional.of(playerUser1));
+        when(userRepository.save(any(User.class))).thenReturn(playerUser1);
+        
+        String result = userService.editPlayer("uuid-1", request);
+        
+        verify(userRepository, times(1)).save(any(User.class));
+        assertEquals("Jugador actualizado exitosamente", result);
+        assertEquals("Only First Name", playerUser1.getFirstName());
+        assertEquals(originalLastName, playerUser1.getLastName());
+        assertEquals(originalCategory, playerUser1.getPlayerCategory());
+    }
+
+    @Test
+    public void testEditPlayerEmptyRequest() {
+        EditPlayerRequest request = new EditPlayerRequest();
+        // Empty request - no fields to update
+        
+        when(userRepository.findByUuid("uuid-1")).thenReturn(Optional.of(playerUser1));
+        when(userRepository.save(any(User.class))).thenReturn(playerUser1);
+        
+        String result = userService.editPlayer("uuid-1", request);
+        
+        verify(userRepository, times(1)).save(any(User.class));
+        assertEquals("Jugador actualizado exitosamente", result);
     }
 }
