@@ -66,12 +66,13 @@ public class WebSecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth
-                    .anyRequest().permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/users/players").hasRole("ADMIN")
+                    .anyRequest().authenticated()
             );
         
         http.authenticationProvider(authenticationProvider());
-        // Temporalmente deshabilitado para debugging
-        // http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
