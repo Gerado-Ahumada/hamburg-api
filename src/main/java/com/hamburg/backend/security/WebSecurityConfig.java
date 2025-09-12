@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import com.hamburg.backend.security.jwt.AuthEntryPointJwt;
 import com.hamburg.backend.security.jwt.AuthTokenFilter;
-import com.hamburg.backend.service.UserService;
+import com.hamburg.backend.security.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +29,7 @@ import com.hamburg.backend.service.UserService;
 public class WebSecurityConfig {
     
     @Autowired
-    private UserService userService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
@@ -41,7 +41,7 @@ public class WebSecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         
-        authProvider.setUserDetailsService(userService);
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         
         return authProvider;
@@ -68,6 +68,7 @@ public class WebSecurityConfig {
                 auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/users/players").hasRole("ADMIN")
+                    .requestMatchers("/api/users/players/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             );
         

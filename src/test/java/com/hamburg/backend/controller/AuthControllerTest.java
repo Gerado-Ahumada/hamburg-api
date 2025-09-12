@@ -48,6 +48,7 @@ public class AuthControllerTest {
 
     private LoginRequest loginRequest;
     private LoginResponse loginResponse;
+    private SignupRequest signupRequest;
 
     @BeforeEach
     public void setup() {
@@ -62,6 +63,15 @@ public class AuthControllerTest {
                 .email("admin@hamburg.com")
                 .role("ROLE_ADMIN")
                 .build();
+
+        signupRequest = new SignupRequest();
+        signupRequest.setUsername("newuser");
+        signupRequest.setEmail("newuser@hamburg.com");
+        signupRequest.setPassword("password123");
+        signupRequest.setFirstName("New");
+        signupRequest.setLastName("User");
+        signupRequest.setPhone("123456789");
+        signupRequest.setPlayerCategory("Amateur");
     }
 
     @Test

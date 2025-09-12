@@ -60,11 +60,26 @@ public class AuthServiceTest {
     @Mock
     private com.hamburg.backend.repository.SessionRepository sessionRepository;
 
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private StatusRepository statusRepository;
+
+    @Mock
+    private PasswordEncoder encoder;
+
     @InjectMocks
     private AuthService authService;
 
     private LoginRequest loginRequest;
     private UserDetailsImpl userDetails;
+    private SignupRequest signupRequest;
+    private User testUser;
+    private Role adminRole;
+    private Role playerRole;
+    private Status activeStatus;
+    private Session testSession;
 
     @BeforeEach
     public void setup() {
@@ -97,22 +112,22 @@ public class AuthServiceTest {
         testUser.setUuid("test-uuid-123");
         
         playerRole = new Role();
-        playerRole.setId(1);
+        playerRole.setId(1L);
         playerRole.setName(ERole.ROLE_PLAYER);
         
         adminRole = new Role();
-        adminRole.setId(2);
+        adminRole.setId(2L);
         adminRole.setName(ERole.ROLE_ADMIN);
         
         activeStatus = new Status();
-        activeStatus.setId(1);
+        activeStatus.setId(1L);
         activeStatus.setName(EStatus.ACTIVE);
         
         testSession = new Session();
         testSession.setId(1L);
         testSession.setToken("test-token");
-        testSession.setCreatedAt(LocalDateTime.now());
-        testSession.setExpiresAt(LocalDateTime.now().plusHours(1));
+        testSession.setCreationDate(LocalDateTime.now());
+        testSession.setExpirationDate(LocalDateTime.now().plusHours(1));
         testSession.setActive(true);
         testSession.setUser(testUser);
     }
@@ -123,7 +138,7 @@ public class AuthServiceTest {
                 .thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(userDetails);
         when(jwtUtils.generateJwtToken(authentication)).thenReturn("jwt-token");
-        when(jwtUtils.getJwtExpirationMs()).thenReturn(86400000L); // 24 hours
+        when(jwtUtils.getJwtExpirationMs()).thenReturn(86400000); // 24 hours
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         doNothing().when(sessionRepository).deactivateSessionsByUser(testUser);
         when(sessionRepository.save(any(Session.class))).thenReturn(testSession);
@@ -239,7 +254,7 @@ public class AuthServiceTest {
     public void testValidarSesionExpired() {
         Session expiredSession = new Session();
         expiredSession.setToken("expired-token");
-        expiredSession.setExpiresAt(LocalDateTime.now().minusHours(1)); // Expired
+        expiredSession.setExpirationDate(LocalDateTime.now().minusHours(1)); // Expired
         expiredSession.setActive(true);
         
         when(sessionRepository.findByTokenAndActiveTrue("expired-token"))

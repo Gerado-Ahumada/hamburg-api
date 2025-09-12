@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.hamburg.backend.service.UserService;
+import com.hamburg.backend.security.UserDetailsServiceImpl;
 import com.hamburg.backend.repository.SessionRepository;
 import com.hamburg.backend.model.Session;
 
@@ -30,7 +30,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private UserService userService;
+    private UserDetailsServiceImpl userDetailsService;
     
     @Autowired
     private SessionRepository sessionRepository;
@@ -62,7 +62,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 logger.info("Usuario extraído del token: {}", username);
 
-                UserDetails userDetails = userService.loadUserByUsername(username);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

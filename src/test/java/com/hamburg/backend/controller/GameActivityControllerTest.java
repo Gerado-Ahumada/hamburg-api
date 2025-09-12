@@ -31,7 +31,9 @@ import com.hamburg.backend.dto.GameActivityRequest;
 import com.hamburg.backend.dto.GameActivityResponse;
 import com.hamburg.backend.dto.GameActivityRangeResponse;
 import com.hamburg.backend.model.GameActivity;
+import com.hamburg.backend.model.Session;
 import com.hamburg.backend.model.User;
+import com.hamburg.backend.repository.SessionRepository;
 import com.hamburg.backend.repository.UserRepository;
 import com.hamburg.backend.service.GameActivityService;
 
@@ -70,7 +72,9 @@ public class GameActivityControllerTest {
         gameActivity = new GameActivity();
         gameActivity.setId(1L);
         gameActivity.setGameDate(gameDate);
-        gameActivity.setUserUuid("test-uuid-123");
+        User testUser = new User();
+        testUser.setUuid("test-uuid-123");
+        gameActivity.setUser(testUser);
         
         gameActivityResponse = new GameActivityResponse();
         gameActivityResponse.setId(1L);
