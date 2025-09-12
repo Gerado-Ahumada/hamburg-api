@@ -18,11 +18,15 @@ import com.hamburg.backend.exception.UnauthorizedRoleException;
 import com.hamburg.backend.service.AuthService;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private AuthService authService;
@@ -35,6 +39,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> autenticarUsuario(@RequestBody LoginRequest loginRequest) {
         try {
+            logger.info("Solicitud de login recibida - Usuario: {}", loginRequest.getUsername());
             LoginResponse loginResponse = authService.autenticar(loginRequest);
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
@@ -50,6 +55,8 @@ public class AuthController {
             @Valid @RequestBody SignupRequest signUpRequest,
             @RequestHeader("Authorization") String authorizationHeader) {
         try {
+            logger.info("Solicitud de registro recibida - Usuario: {}, Email: {}, Rol: {}", 
+                       signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getRole());
             // Extraer el token del header Authorization
             String token = null;
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

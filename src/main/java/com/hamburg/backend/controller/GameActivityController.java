@@ -37,7 +37,8 @@ public class GameActivityController {
     @PostMapping("/register")
     public ResponseEntity<?> registerGameActivity(@Valid @RequestBody GameActivityRequest request) {
         try {
-            logger.info("Recibida solicitud para registrar actividad de juego para UUID: {}", request.getUserUuid());
+            logger.info("Recibida solicitud para registrar actividad de juego - UUID: {}, GameDate: {}", 
+                       request.getUserUuid(), request.getGameDate());
             
             GameActivity gameActivity = gameActivityService.registerGameActivity(request);
             

@@ -58,7 +58,9 @@ public class UserController {
             @RequestHeader("Authorization") String token) {
         
         try {
-            logger.info("Editando jugador con UUID: {}", uuid);
+            logger.info("Editando jugador con UUID: {} - Request: firstName={}, lastName={}, status={}, playerCategory={}", 
+                       uuid, editRequest.getFirstName(), editRequest.getLastName(), 
+                       editRequest.getStatus(), editRequest.getPlayerCategory());
             
             // Extraer token sin el prefijo "Bearer "
             String jwtToken = token.replace("Bearer ", "");
