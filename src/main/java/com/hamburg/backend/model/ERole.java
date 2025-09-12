@@ -1,6 +1,6 @@
 package com.hamburg.backend.model;
 
-public enum ERol {
+public enum ERole {
     ROLE_ADMIN,
     ROLE_PLAYER
 }

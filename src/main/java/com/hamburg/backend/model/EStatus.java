@@ -1,6 +1,6 @@
 package com.hamburg.backend.model;
 
-public enum EEstado {
+public enum EStatus {
     ACTIVE,
-    DESACTIVE
+    INACTIVE
 }

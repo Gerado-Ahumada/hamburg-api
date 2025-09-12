@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.hamburg.backend.service.UsuarioService;
-import com.hamburg.backend.repository.SesionRepository;
-import com.hamburg.backend.model.Sesion;
+import com.hamburg.backend.service.UserService;
+import com.hamburg.backend.repository.SessionRepository;
+import com.hamburg.backend.model.Session;
 
 import java.util.Optional;
 
@@ -30,10 +30,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private UsuarioService usuarioService;
+    private UserService userService;
     
     @Autowired
-    private SesionRepository sesionRepository;
+    private SessionRepository sessionRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -46,9 +46,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         logger.info("Request Method: " + request.getMethod());
         
         try {
-            // Saltear el filtro JWT para el endpoint de login
-            if ("/api/auth/login".equals(request.getRequestURI())) {
-                logger.info("Saltando filtro JWT para login");
+            // Saltear el filtro JWT para endpoints públicos
+            String requestURI = request.getRequestURI();
+            if ("/api/auth/login".equals(requestURI) || 
+                "/api/auth/test".equals(requestURI)) {
+                logger.info("Saltando filtro JWT para endpoint público: {}", requestURI);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -60,7 +62,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 logger.info("Usuario extraído del token: {}", username);
 
-                UserDetails userDetails = usuarioService.loadUserByUsername(username);
+                UserDetails userDetails = userService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -88,16 +90,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
     
     private boolean validarSesionToken(String token) {
-        logger.info("Validando sesión token");
-        Optional<Sesion> sesionOpt = sesionRepository.findByTokenAndActivaTrue(token);
-        logger.info("Sesión encontrada: {}", sesionOpt.isPresent());
-        if (sesionOpt.isPresent()) {
-            Sesion sesion = sesionOpt.get();
-            boolean expirada = sesion.isExpirada();
-            logger.info("Sesión expirada: {}", expirada);
-            logger.info("Fecha expiración: {}", sesion.getFechaExpiracion());
-            logger.info("Fecha actual: {}", java.time.LocalDateTime.now());
-            return !expirada;
+        logger.info("Validating session token");
+        Optional<Session> sessionOpt = sessionRepository.findByTokenAndActiveTrue(token);
+        logger.info("Session found: {}", sessionOpt.isPresent());
+        if (sessionOpt.isPresent()) {
+            Session session = sessionOpt.get();
+            boolean expired = session.isExpired();
+            logger.info("Session expired: {}", expired);
+            logger.info("Expiration date: {}", session.getExpirationDate());
+            logger.info("Current date: {}", java.time.LocalDateTime.now());
+            return !expired;
         }
         return false;
     }

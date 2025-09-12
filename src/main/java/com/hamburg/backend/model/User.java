@@ -10,21 +10,22 @@ import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "usuarios", 
+@Table(name = "users", 
        uniqueConstraints = {
            @UniqueConstraint(columnNames = "username"),
-           @UniqueConstraint(columnNames = "email")
+           @UniqueConstraint(columnNames = "email"),
+           @UniqueConstraint(columnNames = "uuid")
        })
-public class Usuario {
+public class User extends BaseEntity {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(unique = true, nullable = false)
+    private String uuid;
     
     @NotBlank
     @Size(max = 20)
@@ -36,11 +37,11 @@ public class Usuario {
     
     @NotBlank
     @Size(max = 50)
-    private String nombre;
+    private String firstName;
     
     @NotBlank
     @Size(max = 50)
-    private String apellido;
+    private String lastName;
     
     @NotBlank
     @Size(max = 50)
@@ -48,26 +49,34 @@ public class Usuario {
     private String email;
     
     @Size(max = 20)
-    private String telefono;
+    private String phone;
     
     @Size(max = 50)
-    private String categoriaJugador;
+    private String playerCategory;
     
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "usuario_roles",
-               joinColumns = @JoinColumn(name = "usuario_id"),
-               inverseJoinColumns = @JoinColumn(name = "rol_id"))
-    private Set<Rol> roles = new HashSet<>();
+    @JoinTable(name = "user_roles",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "estado_id")
-    private Estado estado;
+    @JoinColumn(name = "status_id")
+    private Status status;
     
-    public Usuario(String username, String email, String password, String nombre, String apellido) {
+    public User(String username, String email, String password, String firstName, String lastName) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.nombre = nombre;
-        this.apellido = apellido;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.uuid = UUID.randomUUID().toString();
+    }
+    
+    @PrePersist
+    private void generateUuid() {
+        if (this.uuid == null) {
+            this.uuid = UUID.randomUUID().toString();
+        }
     }
 }

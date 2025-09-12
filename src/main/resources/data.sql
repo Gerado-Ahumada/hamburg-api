@@ -1,14 +1,14 @@
 -- Insertar roles
-INSERT INTO roles (nombre) VALUES ('ROLE_ADMIN');
-INSERT INTO roles (nombre) VALUES ('ROLE_PLAYER');
+INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
+INSERT INTO roles (name) VALUES ('ROLE_PLAYER');
 
 -- Insertar estados
-INSERT INTO estados (nombre) VALUES ('ACTIVE');
-INSERT INTO estados (nombre) VALUES ('DESACTIVE');
+INSERT INTO statuses (name) VALUES ('ACTIVE');
+INSERT INTO statuses (name) VALUES ('INACTIVE');
 
 -- Insertar usuario administrador (contraseña: admin)
-INSERT INTO usuarios (username, password, nombre, apellido, email, telefono, categoria_jugador, estado_id) VALUES
-('admin', '$2a$10$yRxRYK/S.j6K5NXwJqnE3.dHB2h7gQoXjG/bckJZzI.d9HGHMjFge', 'Administrador', 'Sistema', 'admin@hamburg.com', '123456789', 'N/A', 1);
+INSERT INTO users (username, password, name, last_name, email, phone, player_category, status_id) VALUES
+('admin', '$2a$10$yRxRYK/S.j6K5NXwJqnE3.dHB2h7gQoXjG/bckJZzI.d9HGHMjFge', 'Administrator', 'System', 'admin@hamburg.com', '123456789', 'N/A', 1);
 
 -- Asignar rol de administrador al usuario admin
-INSERT INTO usuario_roles (usuario_id, rol_id) VALUES (1, 1);
+INSERT INTO user_roles (user_id, role_id) VALUES (1, 1);

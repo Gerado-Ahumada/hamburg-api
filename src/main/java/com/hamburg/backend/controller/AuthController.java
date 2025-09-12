@@ -2,7 +2,6 @@ package com.hamburg.backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +14,7 @@ import com.hamburg.backend.dto.LoginRequest;
 import com.hamburg.backend.dto.LoginResponse;
 import com.hamburg.backend.dto.MessageResponse;
 import com.hamburg.backend.dto.SignupRequest;
+import com.hamburg.backend.exception.UnauthorizedRoleException;
 import com.hamburg.backend.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -27,22 +27,59 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("API funcionando correctamente");
+    }
+    
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> autenticarUsuario(@Valid @RequestBody LoginRequest loginRequest) {
-        LoginResponse loginResponse = authService.autenticar(loginRequest);
-        return ResponseEntity.ok(loginResponse);
+    public ResponseEntity<LoginResponse> autenticarUsuario(@RequestBody LoginRequest loginRequest) {
+        try {
+            LoginResponse loginResponse = authService.autenticar(loginRequest);
+            return ResponseEntity.ok(loginResponse);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(LoginResponse.builder()
+                    .token(null)
+                    .username("Error en autenticación: " + e.getMessage())
+                    .build());
+        }
     }
     
     @PostMapping("/signup")
-    public ResponseEntity<?> registrarUsuario(@Valid @RequestBody SignupRequest signUpRequest) {
-        String resultado = authService.registrarUsuario(signUpRequest);
-        
-        if (resultado.startsWith("Error:")) {
+    public ResponseEntity<?> registrarUsuario(
+            @Valid @RequestBody SignupRequest signUpRequest,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            // Extraer el token del header Authorization
+            String token = null;
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                token = authorizationHeader.substring(7);
+            }
+            
+            if (token == null) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("Token de autorización requerido"));
+            }
+            
+            // Validar que el usuario tenga rol de administrador
+            authService.validateAdminRole(token);
+            
+            String resultado = authService.registrarUsuario(signUpRequest);
+            
+            if (resultado.startsWith("Error:")) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse(resultado));
+            }
+            
+            return ResponseEntity.ok(new MessageResponse(resultado));
+            
+        } catch (UnauthorizedRoleException e) {
+            return ResponseEntity.status(403)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse(resultado));
+                    .body(new MessageResponse("Error al registrar usuario: " + e.getMessage()));
         }
-        
-        return ResponseEntity.ok(new MessageResponse(resultado));
     }
     
     @PostMapping("/logout")
@@ -67,8 +104,4 @@ public class AuthController {
         }
     }
     
-    @GetMapping("/test")
-    public ResponseEntity<?> testEndpoint() {
-        return ResponseEntity.ok(new MessageResponse("Endpoint de prueba funcionando"));
-    }
 }
