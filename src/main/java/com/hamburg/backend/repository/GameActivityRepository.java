@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface GameActivityRepository extends JpaRepository<GameActivity, Long> {
@@ -29,4 +31,12 @@ public interface GameActivityRepository extends JpaRepository<GameActivity, Long
     
     @Query("SELECT ga FROM GameActivity ga WHERE ga.user.uuid = :userUuid AND YEAR(ga.gameDate) = :year AND MONTH(ga.gameDate) = :month ORDER BY ga.gameDate DESC")
     List<GameActivity> findByUserUuidAndYearAndMonthOrderByGameDateDesc(@Param("userUuid") String userUuid, @Param("year") int year, @Param("month") int month);
+    
+    @Query("SELECT ga FROM GameActivity ga WHERE ga.user.uuid = :userUuid ORDER BY ga.gameDate DESC")
+    Page<GameActivity> findByUserUuidOrderByGameDateDesc(@Param("userUuid") String userUuid, Pageable pageable);
+    
+    @Query("SELECT COUNT(ga) FROM GameActivity ga WHERE ga.user.uuid = :userUuid")
+    Long countByUserUuid(@Param("userUuid") String userUuid);
+    
+    Long countByUser(User user);
 }

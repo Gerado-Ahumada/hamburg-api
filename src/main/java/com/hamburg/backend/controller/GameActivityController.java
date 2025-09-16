@@ -99,23 +99,4 @@ public class GameActivityController {
         }
     }
     
-    @GetMapping("/test/user/{username}/uuid")
-    public ResponseEntity<Map<String, String>> getUserUuid(@PathVariable String username) {
-        logger.info("Obteniendo UUID para usuario: {}", username);
-        
-        try {
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("username", username);
-            response.put("uuid", user.getUuid());
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error obteniendo UUID para usuario {}: {}", username, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Usuario no encontrado"));
-        }
-    }
 }

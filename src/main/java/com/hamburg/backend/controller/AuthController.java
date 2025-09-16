@@ -31,11 +31,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("API funcionando correctamente");
-    }
-    
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> autenticarUsuario(@RequestBody LoginRequest loginRequest) {
         try {
